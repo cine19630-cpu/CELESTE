@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "dgSpecHash": "ROdry1K73hI=",
+  "success": true,
+  "projectFilePath": "/storage/self/primary/Download/CELESTE/src/Celeste.Android/Celeste.Android.csproj",
+  "expectedPackageFiles": [
+    "/root/.nuget/packages/microsoft.net.illink.tasks/10.0.2/microsoft.net.illink.tasks.10.0.2.nupkg.sha512",
+    "/root/.nuget/packages/monogame.framework.android/3.8.4.1/monogame.framework.android.3.8.4.1.nupkg.sha512",
+    "/root/.nuget/packages/monogame.library.openal/1.24.3.2/monogame.library.openal.1.24.3.2.nupkg.sha512"
+  ],
+  "logs": []
+}

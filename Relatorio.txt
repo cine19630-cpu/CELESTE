@@ -1,0 +1,137 @@
+Relatorio.txt
+
+CHG-001:
+  DATE: 2026-01-31 12:00
+  FILES:
+    - src/Celeste.Core/Celeste.Core.csproj
+    - src/Celeste.Android/Celeste.Android.csproj
+    - Celeste.AndroidPort.sln
+  CHANGE:
+    - Criada estrutura /src com projetos Celeste.Core (multi-target net8.0/net8.0-android) e Celeste.Android (net8.0-android).
+    - Configurado AndroidSupportedAbis: armeabi-v7a;arm64-v8a.
+    - Adicionado solution .sln para build local e CI.
+  WHY:
+    - Separar Core neutro de plataforma do head Android e garantir build para 32/64-bit.
+  TEST:
+    - dotnet restore Celeste.AndroidPort.sln
+    - dotnet build Celeste.AndroidPort.sln -c Release
+  RISK:
+    - Dependências de MonoGame/FMOD podem requerer ajustes finos de versões e propriedades em diferentes ambientes.
+  ROLLBACK:
+    - Reverter csproj/sln para o formato original.
+
+CHG-002:
+  DATE: 2026-01-31 12:00
+  FILES:
+    - src/Celeste.Core/Source/Porting/*.cs
+  CHANGE:
+    - Implementado núcleo de serviços de portabilidade:
+      - PortServices: injeção de Paths/Logger/FileSystem/Boot.
+      - Interfaces: IPathsProvider, ILogger, IFileSystem, IBootManager.
+      - RootRedirectFileSystem: redireciona Content/ e Save/ para BaseDataPath/Content e BaseDataPath/Save.
+      - ContentValidator: valida estrutura mínima (Dialog/Effects/Graphics), detecta case mismatch e gera lista de problemas.
+      - PixelFont + BootManagerMonoGame: tela interna de erro e modo diagnóstico (sem depender do Content externo).
+  WHY:
+    - Reduzir alterações espalhadas no jogo, manter rastreabilidade e falhar de forma controlada.
+  TEST:
+    - Rodar app sem Content: deve abrir tela de erro, exibir ContentPath e lista de faltantes.
+    - Copiar Content correto e pressionar START/ENTER: deve iniciar o jogo.
+  RISK:
+    - Fonte pixel é simples (ASCII + normalização) e pode não renderizar acentos; ainda assim garante legibilidade.
+  ROLLBACK:
+    - Desabilitar BootManager no Android head e remover gate no Engine.
+
+CHG-003:
+  DATE: 2026-01-31 12:00
+  FILES:
+    - src/Celeste.Core/Source/Monocle/Engine.cs
+    - src/Celeste.Core/Source/Monocle/ErrorLog.cs
+  CHANGE:
+    - Engine.ContentDirectory passou a apontar para PortServices.Paths.ContentPath quando disponível (Content externo).
+    - Gate de boot: Engine.Update/Draw delega para PortServices.Boot quando o boot está bloqueando o loop.
+    - ErrorLog grava em LogsPath/error_log.txt quando Paths estão disponíveis; Process.Start removido (inaplicável no Android).
+  WHY:
+    - Evitar crash por Content ausente, manter logs e telas de erro renderizadas pelo MonoGame.
+  TEST:
+    - Verificar logs de BOOT e arquivos em BaseDataPath/Logs.
+  RISK:
+    - Qualquer código que assumia ContentDirectory relativo pode exigir ajuste (esperado no port).
+  ROLLBACK:
+    - Reverter ContentDirectory e remoção do gate.
+
+CHG-004:
+  DATE: 2026-01-31 12:00
+  FILES:
+    - src/Celeste.Core/Source/Celeste/UserIO.cs
+  CHANGE:
+    - Save redirecionado para PortServices.Paths.SavePath (BaseDataPath/Save).
+    - Escrita atômica: grava .tmp, flush, replace/rename para evitar corrupção.
+  WHY:
+    - Android pode matar o processo; escrita atômica reduz risco de save corrompido.
+  TEST:
+    - Rodar, salvar, matar app, reabrir e validar integridade do save.
+  RISK:
+    - Se o jogo assume um layout antigo de Saves/, é necessário migrar (não implementado aqui).
+  ROLLBACK:
+    - Voltar para escrita direta File.WriteAllBytes.
+
+CHG-005:
+  DATE: 2026-01-31 12:00
+  FILES:
+    - src/Celeste.Core/Source/Celeste/Audio.cs
+  CHANGE:
+    - FMOD: preferência por bancos em Content/FMOD/Android, fallback para Content/FMOD/Desktop.
+    - Modo controlado: se FMOD falhar na init, Audio entra em modo disabled e evita exceções em calls comuns.
+  WHY:
+    - FMOD é ponto frequente de falha no boot; evitar bloquear testes de render/input/paths.
+  TEST:
+    - Sem bancos FMOD: app não deve crashar; logs devem indicar BANK_NOT_FOUND e/ou FMOD_INIT_FAILED.
+  RISK:
+    - Alguns pontos do jogo podem assumir áudio sempre disponível; guardas reduziram risco, mas podem existir chamadas não cobertas.
+  ROLLBACK:
+    - Remover disabled/guards e exigir FMOD 100% funcional no boot.
+
+CHG-006:
+  DATE: 2026-01-31 12:00
+  FILES:
+    - src/Celeste.Android/MainActivity.cs
+    - src/Celeste.Android/Platform/*.cs
+    - src/Celeste.Android/Properties/AndroidManifest.xml
+    - src/Celeste.Android/Resources/**/ic_launcher.png
+    - src/Celeste.Android/NativeLibs/**.so
+  CHANGE:
+    - Head Android (AndroidGameActivity) inicializa Paths/Logger cedo, cria BaseDataPath/Content/Logs/Save.
+    - Fullscreen imersivo aplicado no OnCreate/OnResume/OnWindowFocusChanged.
+    - Touch consumido via OnTouchListener (sem controles touch).
+    - Logger: Logcat + arquivo por sessão em Logs/log_YYYY-MM-DD_HH-mm-ss.txt.
+    - Libs nativas FMOD incluídas para armeabi-v7a e arm64-v8a.
+    - Manifest com label/appId corretos e orientação landscape.
+  WHY:
+    - Cumprir requisitos de robustez (logs/lifecycle/fullscreen/input) e compatibilidade 32/64-bit.
+  TEST:
+    - Instalar APK, executar, checar criação de diretórios e log.
+    - Pausar/retomar e confirmar fullscreen re-aplicado.
+  RISK:
+    - Modelos específicos podem requerer pequenos ajustes em fullscreen/insets.
+  ROLLBACK:
+    - Reduzir flags/uso de insets e remover consumo de touch.
+
+CHG-007:
+  DATE: 2026-01-31 12:00
+  FILES:
+    - .github/workflows/android-build.yml
+  CHANGE:
+    - CI básico com dotnet 8 + workload android, build Release e artifacts.
+    - Etapa opcional de assinatura via secrets:
+      - ANDROID_KEYSTORE_B64
+      - ANDROID_KEY_ALIAS
+      - ANDROID_KEYSTORE_PASSWORD
+      - ANDROID_KEY_PASSWORD
+  WHY:
+    - Build reprodutível e fallback quando ambiente local não estiver configurado.
+  TEST:
+    - Rodar workflow manual (workflow_dispatch) e baixar artifacts.
+  RISK:
+    - Assinatura depende de secrets corretos e caminhos de saída; pode requerer ajuste conforme o output do build.
+  ROLLBACK:
+    - Manter somente build + upload artifacts sem assinatura.

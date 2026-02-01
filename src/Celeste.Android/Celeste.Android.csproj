@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0-android</TargetFramework>
+    <OutputType>Exe</OutputType>
+
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+
+    <ApplicationId>celestegame.app</ApplicationId>
+    <ApplicationTitle>CELESTE</ApplicationTitle>
+
+    <AndroidManifest>Properties/AndroidManifest.xml</AndroidManifest>
+    <SupportedOSPlatformVersion>21</SupportedOSPlatformVersion>
+
+    <!-- ABIs -->
+    <RuntimeIdentifiers>android-arm;android-arm64</RuntimeIdentifiers>
+
+    <!-- Formato default -->
+    <AndroidPackageFormat>apk</AndroidPackageFormat>
+
+    <!-- Controle de versões Android -->
+    <AndroidMinSdkVersion>21</AndroidMinSdkVersion>
+    <AndroidTargetSdkVersion>36</AndroidTargetSdkVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Celeste.Core\Celeste.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MonoGame.Framework.Android" Version="3.8.4.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AndroidNativeLibrary Include="NativeLibs\armeabi-v7a\libfmod.so" />
+    <AndroidNativeLibrary Include="NativeLibs\armeabi-v7a\libfmodstudio.so" />
+    <AndroidNativeLibrary Include="NativeLibs\arm64-v8a\libfmod.so" />
+    <AndroidNativeLibrary Include="NativeLibs\arm64-v8a\libfmodstudio.so" />
+  </ItemGroup>
+
+</Project>

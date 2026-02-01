@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "dgSpecHash": "HnluxJ6PbJI=",
+  "success": true,
+  "projectFilePath": "/storage/self/primary/Download/CELESTE/src/Celeste.Core/Celeste.Core.csproj",
+  "expectedPackageFiles": [
+    "/root/.nuget/packages/monogame.framework.android/3.8.4.1/monogame.framework.android.3.8.4.1.nupkg.sha512",
+    "/root/.nuget/packages/monogame.framework.desktopgl/3.8.4.1/monogame.framework.desktopgl.3.8.4.1.nupkg.sha512",
+    "/root/.nuget/packages/monogame.library.openal/1.24.3.2/monogame.library.openal.1.24.3.2.nupkg.sha512",
+    "/root/.nuget/packages/monogame.library.sdl/2.32.2.1/monogame.library.sdl.2.32.2.1.nupkg.sha512",
+    "/root/.nuget/packages/nvorbis/0.10.4/nvorbis.0.10.4.nupkg.sha512"
+  ],
+  "logs": []
+}
